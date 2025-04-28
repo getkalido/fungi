@@ -13,27 +13,51 @@ func Unique[T comparable](items Stream[T]) Stream[T] {
 //
 // For example, let's say there's a struct called User:
 //
-//     type User struct {
-//         ID int // unique database identifier
-//         Name string
-//     }
+//	type User struct {
+//	    ID int // unique database identifier
+//	    Name string
+//	}
 //
 // You can create a stream of unique users like so:
 //
-//     var usersStream fungi.Stream[*User] = service.GetUsers()
-//     //  usersStream might contain duplicates
-//     uniqueUsers := fungi.UniqueBy(func(u *User) int { return u.ID })
-//     uniqueUsersStream := uniqueUsers(usersStream)
-//
+//	var usersStream fungi.Stream[*User] = service.GetUsers()
+//	//  usersStream might contain duplicates
+//	uniqueUsers := fungi.UniqueBy(func(u *User) int { return u.ID })
+//	uniqueUsersStream := uniqueUsers(usersStream)
 func UniqueBy[T any, K comparable](id func(T) K) StreamIdentity[T] {
-	memory := make(map[K]struct{})
-	unique := FilterMap(func(item T) (T, bool) {
-		key := id(item)
-		_, seen := memory[key]
-		memory[key] = struct{}{}
-		return item, !seen
-	})
-	return StreamIdentity[T](unique)
+	if id == nil {
+		panic("nil id function in unique by")
+	}
+	return func(s Stream[T]) Stream[T] {
+		return &uniqueBy[T, K]{
+			id:     id,
+			source: s,
+		}
+	}
+}
+
+type uniqueBy[T any, K comparable] struct {
+	id      func(T) K
+	source  Stream[T]
+	seenIDs map[K]struct{}
+}
+
+func (u *uniqueBy[T, K]) Next() (item T, err error) {
+	if u.seenIDs == nil {
+		u.seenIDs = make(map[K]struct{})
+	}
+	for {
+		item, err = u.source.Next()
+		if err != nil {
+			return
+		}
+		id := u.id(item)
+		if _, seen := u.seenIDs[id]; !seen {
+
+			u.seenIDs[id] = struct{}{}
+			return
+		}
+	}
 }
 
 func identity[T any](item T) T { return item }

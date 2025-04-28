@@ -11,7 +11,7 @@ intent declaratively and produce elegant code that is easy to read and refactor.
 Please import our latest stable beta version:
 
 ```bash
-go get github.com/getkalido/fungi@v1.0.0-beta-4
+go get github.com/getkalido/fungi@latest
 ```
 
 ## Spread The Spores

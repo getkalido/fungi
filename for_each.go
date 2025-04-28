@@ -4,6 +4,8 @@ import "io"
 
 // ForEach uses the custom handler function given to it to process every item
 // from a stream.
+//
+// See [Loop] for a version which doesn't return errors.
 func ForEach[T any](handle func(T) error) StreamHandler[T] {
 	return func(items Stream[T]) (err error) {
 		var item T

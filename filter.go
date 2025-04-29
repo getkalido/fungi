@@ -2,6 +2,9 @@ package fungi
 
 // Filter stream items using a custom checker function.
 func Filter[T any](ok func(T) bool) StreamIdentity[T] {
+	if ok == nil {
+		panic("ok function is nil in filter")
+	}
 	return func(items Stream[T]) Stream[T] {
 		return &filter[T]{
 			source: items,

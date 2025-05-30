@@ -12,7 +12,7 @@ package fungi
 //	slice, err := fungi.Loop(func (in int64) {
 //		fmt.Println(in)
 //	})(fungi.Flatten[int64](someStream))
-func Flatten[T comparable](source Stream[[]T]) Stream[T] {
+func Flatten[T any](source Stream[[]T]) Stream[T] {
 	return &flatten[T]{source: source}
 }
 
